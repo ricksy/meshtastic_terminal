@@ -1100,25 +1100,34 @@ Input {
 }
 
 /* ========================================
-   Status Bar Styles
+   Footer Bar Styles
    ======================================== */
 
-#status-bar {
+#footer-bar {
     dock: bottom;
     width: 100%;
     height: 1;
+}
+
+#footer-bar #status-bar {
+    width: auto;
+    height: 1;
+    padding: 0 1;
     background: $surface;
     color: $text-muted;
-    padding: 0 1;
-    text-align: center;
 }
 
-#status-bar.connected {
-    background: $success 20%;
-    color: $success;
+#footer-bar #status-bar.connected {
+    background: $success;
+    color: $background;
 }
 
-#status-bar.disconnected {
-    background: $error 20%;
-    color: $error;
+#footer-bar #status-bar.disconnected {
+    background: $error;
+    color: $background;
+}
+
+#footer-bar Footer {
+    width: 1fr;
+    height: 1;
 }

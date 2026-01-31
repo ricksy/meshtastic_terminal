@@ -114,8 +114,9 @@ class ChatMonitor(App):
                 yield NodesTab(id="nodes-tab")
             with TabPane("Settings", id="settings"):
                 yield SettingsTab(id="settings-tab")
-        yield Static("Disconnected", id="status-bar")
-        yield Footer()
+        with Horizontal(id="footer-bar"):
+            yield Static("Disconnected", id="status-bar")
+            yield Footer()
 
     def watch_node_count(self, node_count: int) -> None:
         """Update subtitle when node count changes."""
