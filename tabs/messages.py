@@ -176,7 +176,7 @@ class MessagesTab(Vertical):
                     yield Vertical(id="messages-container")
 
                 # No messages placeholder
-                yield Static("No messages yet. Send the first message\!", id="no-messages")
+                yield Static("No messages yet. Send the first message!", id="no-messages")
 
                 # Input bar
                 with Vertical(id="input-bar"):
@@ -359,7 +359,7 @@ class MessagesTab(Vertical):
     def on_bubble_clicked(self, event: MessageBubble.Clicked) -> None:
         """Handle message bubble click to reply."""
         # Don't reply to our own messages
-        if event.message.from_node_id \!= self.my_node_id:
+        if event.message.from_node_id != self.my_node_id:
             self._set_reply(event.message)
 
     @on(Input.Submitted, "#message-input")
