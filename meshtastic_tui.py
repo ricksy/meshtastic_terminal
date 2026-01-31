@@ -37,7 +37,7 @@ from modals import (
 from db import DatabaseManager, Message, Node, Contact, MessageStatus
 
 # Import tabs
-from tabs import ConversationsTab, MessagesTab, NodesTab, SettingsTab
+from tabs import ConversationsTab, MessagesTab, NodesTab, SettingsTab, ChatTab
 
 # Load CSS from external file
 CSS_FILE = Path(__file__).parent / "meshtastic_tui.css"
@@ -58,12 +58,12 @@ class ChatMonitor(App):
     CSS = APP_CSS
 
     BINDINGS = [
-        Binding("1", "switch_tab('conversations')", "Conversations", show=True),
-        Binding("2", "switch_tab('messages')", "Messages", show=True),
-        Binding("3", "switch_tab('nodes')", "Nodes", show=True),
-        Binding("4", "switch_tab('settings')", "Settings", show=True),
+        Binding("1", "switch_tab('chat')", "Chat", show=True),
+        Binding("2", "switch_tab('nodes')", "Nodes", show=True),
+        Binding("3", "switch_tab('settings')", "Settings", show=True),
         Binding("s", "focus_send", "Send", show=True),
         Binding("d", "direct_message", "Direct Message", show=True),
+        Binding("c", "focus_conversations", "Conversations", show=True),
         Binding("h", "toggle_hop_column", "Toggle Hops", show=False),
         Binding("ctrl+n", "show_node_list", "Node List", show=False),
         Binding("ctrl+r", "show_raw_monitor", "Raw Monitor", show=False),
@@ -108,10 +108,8 @@ class ChatMonitor(App):
         """Create child widgets."""
         yield Header()
         with TabbedContent(id="main-tabs"):
-            with TabPane("Conversations", id="conversations"):
-                yield ConversationsTab(id="conversations-tab")
-            with TabPane("Messages", id="messages"):
-                yield MessagesTab(id="messages-tab")
+            with TabPane("Chat", id="chat"):
+                yield ChatTab(id="chat-tab")
             with TabPane("Nodes", id="nodes"):
                 yield NodesTab(id="nodes-tab")
             with TabPane("Settings", id="settings"):
@@ -191,8 +189,8 @@ class ChatMonitor(App):
         """Load contacts from database."""
         if self.db_manager:
             contacts = await self.db_manager.get_contacts()
-            conversations_tab = self.query_one("#conversations-tab", ConversationsTab)
-            await conversations_tab.load_contacts(contacts)
+            chat_tab = self.query_one("#chat-tab", ChatTab)
+            await chat_tab.load_contacts(contacts)
 
     async def _load_messages_for_contact(self, contact_key: str) -> None:
         """Load messages for a specific contact."""
@@ -207,9 +205,9 @@ class ChatMonitor(App):
             if msg.from_node_id not in node_names:
                 node_names[msg.from_node_id] = self.get_node_display_name(msg.from_node_id)
 
-        messages_tab = self.query_one("#messages-tab", MessagesTab)
-        messages_tab.my_node_id = self.my_node_id
-        await messages_tab.load_messages(messages, node_names)
+        chat_tab = self.query_one("#chat-tab", ChatTab)
+        chat_tab.set_my_node_id(self.my_node_id)
+        await chat_tab.load_messages(messages, node_names)
 
         # Mark as read
         await self.db_manager.mark_messages_read(contact_key)
@@ -472,9 +470,9 @@ class ChatMonitor(App):
             self.current_long_name = info["user"].get("longName", "")
             self.current_short_name = info["user"].get("shortName", "")
 
-            # Update messages tab with my node ID
-            messages_tab = self.query_one("#messages-tab", MessagesTab)
-            messages_tab.my_node_id = self.my_node_id
+            # Update chat tab with my node ID
+            chat_tab = self.query_one("#chat-tab", ChatTab)
+            chat_tab.set_my_node_id(self.my_node_id)
 
             self.register_node(self.my_node_id, info["user"].get("longName"))
 
@@ -810,8 +808,8 @@ class ChatMonitor(App):
 
         # If this is the current conversation, add to messages view
         if contact_key == self.current_contact_key:
-            messages_tab = self.query_one("#messages-tab", MessagesTab)
-            await messages_tab.add_message(message, sender_name)
+            chat_tab = self.query_one("#chat-tab", ChatTab)
+            await chat_tab.add_message(message, sender_name)
 
             # Mark as read immediately
             await self.db_manager.mark_messages_read(contact_key)
@@ -874,41 +872,39 @@ class ChatMonitor(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = tab_id
         # Focus the appropriate widget after switching
-        if tab_id == "conversations":
-            convos_tab = self.query_one("#conversations-tab", ConversationsTab)
-            convos_tab.focus_list()
-
+        if tab_id == "chat":
+            chat_tab = self.query_one("#chat-tab", ChatTab)
+            chat_tab.focus_conversations()
 
     def action_focus_send(self) -> None:
-        """Focus the message input in the messages tab."""
+        """Focus the message input in the chat tab."""
         if not self.is_connected:
             return
 
-        # Switch to messages tab and focus input
-        self.action_switch_tab("messages")
-        messages_tab = self.query_one("#messages-tab", MessagesTab)
-        messages_tab.focus_input()
+        # Switch to chat tab and focus input
+        self.action_switch_tab("chat")
+        chat_tab = self.query_one("#chat-tab", ChatTab)
+        chat_tab.focus_input()
+
+    def action_focus_conversations(self) -> None:
+        """Focus the conversations list in the chat tab."""
+        self.action_switch_tab("chat")
+        chat_tab = self.query_one("#chat-tab", ChatTab)
+        chat_tab.focus_conversations()
 
     # ==================== Event Handlers ====================
 
-    @on(ConversationsTab.ConversationSelected)
-    def on_conversation_selected(self, event: ConversationsTab.ConversationSelected) -> None:
+    @on(ChatTab.ConversationSelected)
+    def on_conversation_selected(self, event: ChatTab.ConversationSelected) -> None:
         """Handle conversation selection."""
         contact = event.contact
         self.current_contact_key = contact.contact_key
 
-        # Set contact on messages tab
-        messages_tab = self.query_one("#messages-tab", MessagesTab)
-        messages_tab.set_contact(contact)
-
-        # Load messages
+        # Load messages for the selected conversation
         self.run_worker(self._load_messages_for_contact(contact.contact_key))
 
-        # Switch to messages tab
-        self.action_switch_tab("messages")
-
-    @on(MessagesTab.MessageSendRequested)
-    def on_message_send_requested(self, event: MessagesTab.MessageSendRequested) -> None:
+    @on(ChatTab.MessageSendRequested)
+    def on_message_send_requested(self, event: ChatTab.MessageSendRequested) -> None:
         """Handle message send request."""
         if not self.is_connected:
             self.notify("Not connected to device", severity="error")
@@ -985,8 +981,8 @@ class ChatMonitor(App):
                 await self._load_contacts()
 
                 # Add to messages view
-                messages_tab = self.query_one("#messages-tab", MessagesTab)
-                await messages_tab.add_message(message, self.current_long_name or "You")
+                chat_tab = self.query_one("#chat-tab", ChatTab)
+                await chat_tab.add_message(message, self.current_long_name or "You")
 
         except Exception as e:
             self.notify(f"Failed to send: {e}", severity="error")
@@ -1074,16 +1070,16 @@ class ChatMonitor(App):
 
         self.current_contact_key = contact_key
 
-        # Set up messages tab
-        messages_tab = self.query_one("#messages-tab", MessagesTab)
-        messages_tab.set_contact(contact)
+        # Set up chat tab
+        chat_tab = self.query_one("#chat-tab", ChatTab)
+        chat_tab.set_contact(contact)
 
         # Load any existing messages
         self.run_worker(self._load_messages_for_contact(contact_key))
 
-        # Switch to messages tab and focus input
-        self.action_switch_tab("messages")
-        messages_tab.focus_input()
+        # Switch to chat tab and focus input
+        self.action_switch_tab("chat")
+        chat_tab.focus_input()
 
     def action_change_preset(self) -> None:
         """Show the preset selector dialog."""
