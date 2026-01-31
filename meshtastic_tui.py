@@ -472,14 +472,16 @@ class ChatMonitor(App):
                 self.iface = await loop.run_in_executor(
                     None,
                     lambda: meshtastic.ble_interface.BLEInterface(
-                        address=self.selected_ble_address
+                        address=self.selected_ble_address,
+                        timeout=60.0,  # Longer timeout for slower devices
                     ),
                 )
             else:
                 self.iface = await loop.run_in_executor(
                     None,
                     lambda: meshtastic.serial_interface.SerialInterface(
-                        devPath=self.selected_serial_port
+                        devPath=self.selected_serial_port,
+                        connectTimeout=60.0,  # Longer timeout for slower devices
                     ),
                 )
 
@@ -1360,14 +1362,16 @@ class ChatMonitor(App):
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.ble_interface.BLEInterface(
-                            address=self.selected_ble_address
+                            address=self.selected_ble_address,
+                            timeout=60.0,
                         ),
                     )
                 else:
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.serial_interface.SerialInterface(
-                            devPath=self.selected_serial_port
+                            devPath=self.selected_serial_port,
+                            connectTimeout=60.0,
                         ),
                     )
 
@@ -1438,14 +1442,16 @@ class ChatMonitor(App):
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.ble_interface.BLEInterface(
-                            address=self.selected_ble_address
+                            address=self.selected_ble_address,
+                            timeout=60.0,
                         ),
                     )
                 else:
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.serial_interface.SerialInterface(
-                            devPath=self.selected_serial_port
+                            devPath=self.selected_serial_port,
+                            connectTimeout=60.0,
                         ),
                     )
 
