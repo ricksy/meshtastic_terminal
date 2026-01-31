@@ -1107,12 +1107,13 @@ Input {
     dock: bottom;
     width: 100%;
     height: 1;
+    background: $panel;
 }
 
 #footer-bar #status-bar {
     width: auto;
     height: 1;
-    padding: 0 1;
+    padding: 0 2;
     background: $surface;
     color: $text-muted;
 }
@@ -1128,6 +1129,7 @@ Input {
 }
 
 #footer-bar Footer {
+    dock: none;
     width: 1fr;
     height: 1;
 }
