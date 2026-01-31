@@ -1,3 +1,591 @@
+/* ========================================
+   Meshtastic Terminal - Main Styles
+   ======================================== */
+
+/* Screen and App basics */
+Screen {
+    background: $background;
+}
+
+/* ========================================
+   TabbedContent Styles
+   ======================================== */
+
+TabbedContent {
+    height: 1fr;
+}
+
+TabPane {
+    padding: 0;
+}
+
+ContentSwitcher {
+    height: 1fr;
+}
+
+Tabs {
+    dock: top;
+    height: 3;
+}
+
+Tab {
+    width: auto;
+    padding: 0 2;
+}
+
+Tab:focus {
+    text-style: bold;
+}
+
+Tab.-active {
+    background: $accent;
+    color: $text;
+    text-style: bold;
+}
+
+/* ========================================
+   Conversations Tab Styles
+   ======================================== */
+
+ConversationsTab {
+    width: 100%;
+    height: 100%;
+}
+
+ConversationsTab #conversations-list {
+    width: 100%;
+    height: 1fr;
+}
+
+ConversationsTab #no-conversations {
+    width: 100%;
+    height: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+/* Contact Item Styles */
+ContactItem {
+    height: 3;
+    padding: 0 1;
+}
+
+ContactItem > Horizontal {
+    height: 100%;
+    width: 100%;
+}
+
+ContactItem .color-chip {
+    width: 2;
+    height: 1;
+    margin-right: 1;
+    content-align: center middle;
+}
+
+ContactItem .contact-name {
+    width: 1fr;
+    height: 1;
+}
+
+ContactItem .last-message {
+    width: 1fr;
+    height: 1;
+    color: $text-muted;
+}
+
+ContactItem .time-stamp {
+    width: auto;
+    min-width: 5;
+    height: 1;
+    color: $text-muted;
+    text-align: right;
+}
+
+ContactItem .unread-badge {
+    width: auto;
+    min-width: 3;
+    height: 1;
+    background: $primary;
+    color: $background;
+    text-align: center;
+    margin-left: 1;
+}
+
+ContactItem .unread-badge.hidden {
+    display: none;
+}
+
+ContactItem:hover {
+    background: $accent 20%;
+}
+
+ContactItem.-highlight {
+    background: $accent;
+}
+
+/* ========================================
+   Messages Tab Styles
+   ======================================== */
+
+MessagesTab {
+    width: 100%;
+    height: 100%;
+}
+
+MessagesTab #messages-header {
+    width: 100%;
+    height: 3;
+    background: $surface;
+    border-bottom: solid $primary;
+    padding: 1;
+}
+
+MessagesTab #contact-title {
+    width: 1fr;
+    height: 1;
+    text-style: bold;
+}
+
+MessagesTab #messages-scroll {
+    width: 100%;
+    height: 1fr;
+}
+
+MessagesTab #messages-container {
+    width: 100%;
+    height: auto;
+    padding: 1;
+}
+
+MessagesTab #no-messages {
+    width: 100%;
+    height: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+MessagesTab #no-conversation {
+    width: 100%;
+    height: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+MessagesTab #input-bar {
+    width: 100%;
+    height: auto;
+    background: $surface;
+    border-top: solid $primary;
+    padding: 1;
+}
+
+MessagesTab #reply-preview {
+    width: 100%;
+    height: auto;
+    background: $surface;
+    border-left: thick $accent;
+    padding: 0 1;
+    margin-bottom: 1;
+    color: $text-muted;
+}
+
+MessagesTab #reply-preview.hidden {
+    display: none;
+}
+
+MessagesTab #message-input {
+    width: 1fr;
+}
+
+MessagesTab #send-button {
+    width: auto;
+    min-width: 8;
+    margin-left: 1;
+}
+
+/* Message Bubble Styles */
+MessageBubble {
+    width: 100%;
+    height: auto;
+    padding: 0 1;
+    margin: 1 0;
+}
+
+MessageBubble.outgoing {
+    align: right top;
+}
+
+MessageBubble.incoming {
+    align: left top;
+}
+
+MessageBubble > Vertical {
+    width: auto;
+    max-width: 80%;
+    height: auto;
+    padding: 1;
+    border: round $primary;
+}
+
+MessageBubble.outgoing > Vertical {
+    border: round $success;
+    background: $success 10%;
+}
+
+MessageBubble.incoming > Vertical {
+    border: round $primary;
+    background: $primary 10%;
+}
+
+MessageBubble .sender-name {
+    width: auto;
+    height: 1;
+    text-style: bold;
+    margin-bottom: 0;
+}
+
+MessageBubble .message-content {
+    width: auto;
+    height: auto;
+}
+
+MessageBubble .message-footer {
+    width: 100%;
+    height: 1;
+    margin-top: 0;
+}
+
+MessageBubble .message-time {
+    width: auto;
+    height: 1;
+    color: $text-muted;
+}
+
+MessageBubble .message-status {
+    width: auto;
+    height: 1;
+    margin-left: 1;
+}
+
+MessageBubble .message-status.status-queued {
+    color: $text-muted;
+}
+
+MessageBubble .message-status.status-enroute,
+MessageBubble .message-status.status-received {
+    color: $warning;
+}
+
+MessageBubble .message-status.status-acked {
+    color: $success;
+}
+
+MessageBubble .message-status.status-failed {
+    color: $error;
+}
+
+MessageBubble .reply-preview {
+    width: auto;
+    height: auto;
+    color: $text-muted;
+    text-style: italic;
+    border-left: thick $accent;
+    padding-left: 1;
+    margin-bottom: 1;
+}
+
+MessageBubble:hover {
+    background: $surface;
+}
+
+/* ========================================
+   Nodes Tab Styles
+   ======================================== */
+
+NodesTab {
+    width: 100%;
+    height: 100%;
+}
+
+NodesTab #filter-bar {
+    width: 100%;
+    height: 3;
+    background: $surface;
+    border-bottom: solid $primary;
+    padding: 0 1;
+}
+
+NodesTab #search-input {
+    width: 1fr;
+}
+
+NodesTab #filter-online {
+    width: auto;
+    min-width: 10;
+    margin-left: 1;
+}
+
+NodesTab #filter-favorites {
+    width: auto;
+    min-width: 12;
+    margin-left: 1;
+}
+
+NodesTab #sort-select {
+    width: 15;
+    margin-left: 1;
+}
+
+NodesTab #nodes-list {
+    width: 100%;
+    height: 1fr;
+}
+
+NodesTab #no-nodes {
+    width: 100%;
+    height: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+NodesTab #node-count {
+    width: 100%;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+    border-top: solid $primary;
+}
+
+NodesTab .filter-button {
+    border: none;
+    background: $surface;
+}
+
+NodesTab .filter-button.active {
+    background: $primary;
+    color: $background;
+}
+
+/* Node Card Styles */
+NodeCard {
+    height: 4;
+    padding: 0 1;
+}
+
+NodeCard > Horizontal {
+    height: 100%;
+    width: 100%;
+}
+
+NodeCard .color-chip {
+    width: 2;
+    height: 3;
+    margin-right: 1;
+    content-align: center middle;
+}
+
+NodeCard .node-info {
+    width: 1fr;
+    height: 100%;
+}
+
+NodeCard .node-name {
+    width: 100%;
+    height: 1;
+    text-style: bold;
+}
+
+NodeCard .node-model {
+    width: auto;
+    height: 1;
+    color: $text-muted;
+}
+
+NodeCard .node-stats {
+    width: auto;
+    height: 100%;
+    padding-left: 1;
+}
+
+NodeCard .signal-bars {
+    width: auto;
+    height: 1;
+    color: $success;
+}
+
+NodeCard .battery-level {
+    width: auto;
+    height: 1;
+}
+
+NodeCard .battery-level.low {
+    color: $error;
+}
+
+NodeCard .battery-level.medium {
+    color: $warning;
+}
+
+NodeCard .battery-level.high {
+    color: $success;
+}
+
+NodeCard .battery-level.powered {
+    color: $accent;
+}
+
+NodeCard .last-heard {
+    width: auto;
+    min-width: 8;
+    height: 1;
+    color: $text-muted;
+    text-align: right;
+}
+
+NodeCard .role-badge {
+    width: auto;
+    height: 1;
+    padding: 0 1;
+    margin-left: 1;
+    background: $primary 30%;
+    color: $text;
+}
+
+NodeCard .role-badge.router {
+    background: $warning 30%;
+}
+
+NodeCard .role-badge.repeater {
+    background: $success 30%;
+}
+
+NodeCard .favorite-star {
+    width: 2;
+    height: 1;
+    color: $warning;
+}
+
+NodeCard .favorite-star.hidden {
+    display: none;
+}
+
+NodeCard:hover {
+    background: $accent 20%;
+}
+
+NodeCard.-highlight {
+    background: $accent;
+}
+
+NodeCard.online .node-name {
+    color: $success;
+}
+
+NodeCard.offline .node-name {
+    color: $text-muted;
+}
+
+/* ========================================
+   Settings Tab Styles
+   ======================================== */
+
+SettingsTab {
+    width: 100%;
+    height: 100%;
+}
+
+SettingsTab #settings-list {
+    width: 100%;
+    height: 1fr;
+}
+
+SettingsTab #settings-footer {
+    width: 100%;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+    border-top: solid $primary;
+}
+
+/* Setting Item Styles */
+SettingItem {
+    height: 3;
+    padding: 0 1;
+}
+
+SettingItem > Horizontal {
+    height: 100%;
+    width: 100%;
+}
+
+SettingItem .setting-label {
+    width: 1fr;
+    height: 1;
+}
+
+SettingItem .setting-value {
+    width: auto;
+    min-width: 20;
+    height: 1;
+    color: $text-muted;
+    text-align: right;
+}
+
+SettingItem:hover {
+    background: $accent 20%;
+}
+
+SettingItem.-highlight {
+    background: $accent;
+}
+
+/* Section Header Styles */
+SectionHeader {
+    width: 100%;
+    height: 2;
+    background: $surface;
+    color: $text;
+    text-style: bold;
+    padding: 0 1;
+    border-bottom: solid $primary;
+}
+
+/* ========================================
+   Status Badge Styles
+   ======================================== */
+
+StatusBadge {
+    width: auto;
+    height: auto;
+    padding: 0 1;
+}
+
+StatusBadge.status-queued {
+    color: $text-muted;
+}
+
+StatusBadge.status-enroute {
+    color: $warning;
+}
+
+StatusBadge.status-received {
+    color: $success;
+}
+
+StatusBadge.status-acked {
+    color: $success;
+}
+
+StatusBadge.status-failed {
+    color: $error;
+}
+
+/* ========================================
+   Modal Screen Styles
+   ======================================== */
+
 /* PresetSelectorScreen styles */
 PresetSelectorScreen {
     align: center middle;
@@ -465,10 +1053,9 @@ NodeDetailScreen {
     text-style: bold underline;
 }
 
-/* ChatMonitor main app styles */
-Screen {
-    background: $background;
-}
+/* ========================================
+   Legacy DataTable Styles (for existing modals)
+   ======================================== */
 
 DataTable {
     height: 1fr;
