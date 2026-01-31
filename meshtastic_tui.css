@@ -1098,3 +1098,27 @@ Input {
     color: $accent;
     text-style: italic;
 }
+
+/* ========================================
+   Status Bar Styles
+   ======================================== */
+
+#status-bar {
+    dock: bottom;
+    width: 100%;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+    text-align: center;
+}
+
+#status-bar.connected {
+    background: $success 20%;
+    color: $success;
+}
+
+#status-bar.disconnected {
+    background: $error 20%;
+    color: $error;
+}

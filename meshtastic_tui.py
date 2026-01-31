@@ -114,6 +114,7 @@ class ChatMonitor(App):
                 yield NodesTab(id="nodes-tab")
             with TabPane("Settings", id="settings"):
                 yield SettingsTab(id="settings-tab")
+        yield Static("Disconnected", id="status-bar")
         yield Footer()
 
     def watch_node_count(self, node_count: int) -> None:
@@ -141,6 +142,27 @@ class ChatMonitor(App):
             settings_tab.update_values(is_connected=is_connected)
         except Exception:
             pass
+        # Update status bar
+        self._update_status_bar()
+
+    def _update_status_bar(self) -> None:
+        """Update the status bar with connection info."""
+        try:
+            status_bar = self.query_one("#status-bar", Static)
+            if self.is_connected:
+                device = self.selected_serial_port or self.selected_ble_address or "Unknown"
+                if self.use_ble:
+                    status_bar.update(f"Connected (BLE: {device})")
+                else:
+                    status_bar.update(f"Connected ({device})")
+                status_bar.remove_class("disconnected")
+                status_bar.add_class("connected")
+            else:
+                status_bar.update("Disconnected")
+                status_bar.remove_class("connected")
+                status_bar.add_class("disconnected")
+        except Exception:
+            pass
 
     def update_subtitle(self) -> None:
         """Update the subtitle with current stats."""
@@ -166,6 +188,9 @@ class ChatMonitor(App):
 
         # Set initial node count
         self.node_count = len(self.known_nodes)
+
+        # Initialize status bar
+        self._update_status_bar()
 
         # Load contacts from database
         await self._load_contacts()
