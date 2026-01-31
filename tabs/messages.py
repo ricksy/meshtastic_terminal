@@ -136,6 +136,9 @@ class MessagesTab(Vertical):
 
     MessagesTab #message-input {
         width: 1fr;
+        border: solid $primary;
+        background: $surface;
+        padding: 0 1;
     }
 
     MessagesTab #send-button {

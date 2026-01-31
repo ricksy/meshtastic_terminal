@@ -1526,7 +1526,12 @@ class ChatMonitor(App):
                         pass
                 else:
                     loop = asyncio.get_event_loop()
-                    await loop.run_in_executor(None, self.iface.close)
+                    try:
+                        await asyncio.wait_for(
+                            loop.run_in_executor(None, self.iface.close), timeout=2.0
+                        )
+                    except asyncio.TimeoutError:
+                        pass
             except Exception:
                 pass
 
