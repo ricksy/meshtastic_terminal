@@ -9,7 +9,14 @@ from typing import Optional
 import meshtastic
 import meshtastic.serial_interface
 import meshtastic.ble_interface
+import meshtastic.mesh_interface
 import serial.tools.list_ports
+
+# Patch meshtastic to use longer connection timeout for slower devices (Pi Zero)
+_original_waitConnected = meshtastic.mesh_interface.MeshInterface._waitConnected
+def _patched_waitConnected(self, timeout=60.0):
+    return _original_waitConnected(self, timeout=timeout)
+meshtastic.mesh_interface.MeshInterface._waitConnected = _patched_waitConnected
 from pubsub import pub
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
@@ -481,7 +488,6 @@ class ChatMonitor(App):
                     None,
                     lambda: meshtastic.serial_interface.SerialInterface(
                         devPath=self.selected_serial_port,
-                        connectTimeout=60.0,  # Longer timeout for slower devices
                     ),
                 )
 
@@ -1363,16 +1369,14 @@ class ChatMonitor(App):
                         None,
                         lambda: meshtastic.ble_interface.BLEInterface(
                             address=self.selected_ble_address,
-                            timeout=60.0,
-                        ),
+                                                    ),
                     )
                 else:
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.serial_interface.SerialInterface(
                             devPath=self.selected_serial_port,
-                            connectTimeout=60.0,
-                        ),
+                                                    ),
                     )
 
                 self.subscribe_to_events()
@@ -1443,16 +1447,14 @@ class ChatMonitor(App):
                         None,
                         lambda: meshtastic.ble_interface.BLEInterface(
                             address=self.selected_ble_address,
-                            timeout=60.0,
-                        ),
+                                                    ),
                     )
                 else:
                     self.iface = await loop.run_in_executor(
                         None,
                         lambda: meshtastic.serial_interface.SerialInterface(
                             devPath=self.selected_serial_port,
-                            connectTimeout=60.0,
-                        ),
+                                                    ),
                     )
 
                 self.subscribe_to_events()
