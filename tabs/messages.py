@@ -138,7 +138,9 @@ class MessagesTab(Vertical):
 
     def on_mount(self) -> None:
         """Set up the tab when mounted."""
-        self._update_visibility()
+        # Don't hide anything initially - let the layout compute sizes first
+        # Visibility will be updated when data is loaded via set_contact()
+        pass
 
     def _update_visibility(self) -> None:
         """Update visibility based on current state."""
@@ -162,6 +164,9 @@ class MessagesTab(Vertical):
             scroll.display = True
             no_msgs.display = False
             input_bar.display = True
+
+        # Force layout refresh after display changes
+        self.refresh(layout=True)
 
     def set_contact(self, contact: Contact | None) -> None:
         """Set the current conversation contact."""

@@ -34,7 +34,7 @@ class ConversationsTab(Vertical):
 
     ConversationsTab #conversations-list {
         width: 100%;
-        height: 1fr;
+        height: 100%;
     }
 
     ConversationsTab #no-conversations {
@@ -67,7 +67,9 @@ class ConversationsTab(Vertical):
 
     def on_mount(self) -> None:
         """Set up the tab when mounted."""
-        self._update_visibility()
+        # Don't hide anything initially - let the layout compute sizes first
+        # Visibility will be updated when data is loaded
+        pass
 
     def _update_visibility(self) -> None:
         """Update visibility of list vs empty message."""
@@ -80,6 +82,9 @@ class ConversationsTab(Vertical):
         else:
             list_view.display = False
             no_convos.display = True
+
+        # Force layout refresh after display changes
+        self.refresh(layout=True)
 
     async def load_contacts(self, contacts: list[Contact]) -> None:
         """Load contacts into the list."""

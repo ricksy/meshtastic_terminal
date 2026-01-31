@@ -141,7 +141,9 @@ class NodesTab(Vertical):
 
     def on_mount(self) -> None:
         """Set up the tab when mounted."""
-        self._update_visibility()
+        # Don't hide anything initially - let the layout compute sizes first
+        # Visibility will be updated when data is loaded
+        pass
 
     def _update_visibility(self) -> None:
         """Update visibility based on filtered nodes."""
@@ -161,6 +163,9 @@ class NodesTab(Vertical):
         shown = len(filtered)
         count_text = f"{shown} of {total} nodes" if shown != total else f"{total} nodes"
         self.query_one("#node-count", Static).update(count_text)
+
+        # Force layout refresh after display changes
+        self.refresh(layout=True)
 
     def _get_filtered_nodes(self) -> list[Node]:
         """Get nodes filtered by current criteria."""
