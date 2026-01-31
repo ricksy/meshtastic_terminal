@@ -873,6 +873,11 @@ class ChatMonitor(App):
         """Switch to a specific tab."""
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = tab_id
+        # Focus the appropriate widget after switching
+        if tab_id == "conversations":
+            convos_tab = self.query_one("#conversations-tab", ConversationsTab)
+            convos_tab.focus_list()
+
 
     def action_focus_send(self) -> None:
         """Focus the message input in the messages tab."""

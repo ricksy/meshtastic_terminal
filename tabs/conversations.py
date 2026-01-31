@@ -20,6 +20,10 @@ def sanitize_id(contact_key: str) -> str:
 class ConversationsTab(Vertical):
     """Tab showing list of conversations sorted by recent activity."""
 
+    BINDINGS = [
+        ("enter", "select_conversation", "Select"),
+    ]
+
     class ConversationSelected(TextualMessage):
         """Message sent when a conversation is selected."""
         def __init__(self, contact: Contact):
@@ -71,6 +75,25 @@ class ConversationsTab(Vertical):
         # Visibility will be updated when data is loaded
         pass
 
+    def on_show(self) -> None:
+        """Focus the list when tab becomes visible."""
+        self.focus_list()
+
+    def focus_list(self) -> None:
+        """Focus the conversations list for keyboard navigation."""
+        list_view = self.query_one("#conversations-list", ListView)
+        if list_view.display:
+            list_view.focus()
+            # Ensure first item is highlighted if nothing is selected
+            if not list_view.highlighted_child and list_view.children:
+                list_view.index = 0
+
+    def action_select_conversation(self) -> None:
+        """Select the currently highlighted conversation."""
+        contact = self.get_selected_contact()
+        if contact:
+            self.post_message(self.ConversationSelected(contact))
+
     def _update_visibility(self) -> None:
         """Update visibility of list vs empty message."""
         list_view = self.query_one("#conversations-list", ListView)
@@ -114,6 +137,9 @@ class ConversationsTab(Vertical):
                 await list_view.append(item)
 
         self._update_visibility()
+        
+        # Focus list after loading contacts
+        self.focus_list()
 
     async def update_contact(self, contact: Contact) -> None:
         """Update a single contact in the list."""
