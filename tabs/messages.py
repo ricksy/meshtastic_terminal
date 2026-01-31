@@ -1,13 +1,25 @@
 """Messages tab for viewing and sending messages in a conversation."""
 
 from textual.app import ComposeResult
-from textual.widgets import Static, Input, Button
+from textual.widgets import Static, Input, Button, ListView, ListItem
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual.message import Message as TextualMessage
 from textual import on
 
 from db.models import Message, Contact, MessageStatus
 from widgets.message_bubble import MessageBubble
+
+
+class NodeListItem(ListItem):
+    """A list item showing a node in the conversation."""
+
+    def __init__(self, node_id: str, name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.node_id = node_id
+        self.node_name = name
+
+    def compose(self) -> ComposeResult:
+        yield Static(self.node_name or self.node_id)
 
 
 class MessagesTab(Vertical):
@@ -39,6 +51,41 @@ class MessagesTab(Vertical):
         width: 1fr;
         height: 1;
         text-style: bold;
+    }
+
+    MessagesTab #main-content {
+        width: 100%;
+        height: 1fr;
+    }
+
+    MessagesTab #chat-area {
+        width: 1fr;
+        height: 100%;
+    }
+
+    MessagesTab #nodes-panel {
+        width: 20;
+        height: 100%;
+        background: $surface;
+        border-left: solid $primary;
+    }
+
+    MessagesTab #nodes-header {
+        width: 100%;
+        height: 2;
+        background: $primary 20%;
+        padding: 0 1;
+        text-style: bold;
+    }
+
+    MessagesTab #nodes-list {
+        width: 100%;
+        height: 1fr;
+    }
+
+    MessagesTab #nodes-list ListItem {
+        height: 2;
+        padding: 0 1;
     }
 
     MessagesTab #messages-scroll {
@@ -106,6 +153,7 @@ class MessagesTab(Vertical):
         self.messages: list[Message] = []
         self._message_bubbles: dict[int, MessageBubble] = {}
         self._reply_to_message: Message | None = None
+        self._participants: dict[str, str] = {}  # node_id -> name
 
     def compose(self) -> ComposeResult:
         """Create the messages view."""
@@ -119,50 +167,58 @@ class MessagesTab(Vertical):
             id="no-conversation"
         )
 
-        # Messages scroll area
-        with VerticalScroll(id="messages-scroll"):
-            yield Vertical(id="messages-container")
+        # Main content with chat and nodes panel
+        with Horizontal(id="main-content"):
+            # Chat area (messages + input)
+            with Vertical(id="chat-area"):
+                # Messages scroll area
+                with VerticalScroll(id="messages-scroll"):
+                    yield Vertical(id="messages-container")
 
-        # No messages placeholder
-        yield Static("No messages in this conversation", id="no-messages")
+                # No messages placeholder
+                yield Static("No messages yet. Send the first message\!", id="no-messages")
 
-        # Input bar
-        with Vertical(id="input-bar"):
-            # Reply preview
-            yield Static("", id="reply-preview", classes="hidden")
+                # Input bar
+                with Vertical(id="input-bar"):
+                    # Reply preview
+                    yield Static("", id="reply-preview", classes="hidden")
 
-            # Input row
-            with Horizontal():
-                yield Input(placeholder="Type a message...", id="message-input")
-                yield Button("Send", id="send-button", variant="primary")
+                    # Input row
+                    with Horizontal():
+                        yield Input(placeholder="Type a message...", id="message-input")
+                        yield Button("Send", id="send-button", variant="primary")
+
+            # Nodes panel (right side)
+            with Vertical(id="nodes-panel"):
+                yield Static("Participants", id="nodes-header")
+                yield ListView(id="nodes-list")
 
     def on_mount(self) -> None:
         """Set up the tab when mounted."""
-        # Don't hide anything initially - let the layout compute sizes first
-        # Visibility will be updated when data is loaded via set_contact()
-        pass
+        self._update_visibility()
 
     def _update_visibility(self) -> None:
         """Update visibility based on current state."""
         no_convo = self.query_one("#no-conversation", Static)
+        main_content = self.query_one("#main-content", Horizontal)
         scroll = self.query_one("#messages-scroll", VerticalScroll)
         no_msgs = self.query_one("#no-messages", Static)
         input_bar = self.query_one("#input-bar", Vertical)
 
         if self.current_contact is None:
             no_convo.display = True
-            scroll.display = False
-            no_msgs.display = False
-            input_bar.display = False
-        elif not self.messages:
-            no_convo.display = False
-            scroll.display = False
-            no_msgs.display = True
-            input_bar.display = True
+            main_content.display = False
         else:
             no_convo.display = False
-            scroll.display = True
-            no_msgs.display = False
+            main_content.display = True
+
+            if not self.messages:
+                scroll.display = False
+                no_msgs.display = True
+            else:
+                scroll.display = True
+                no_msgs.display = False
+
             input_bar.display = True
 
         # Force layout refresh after display changes
@@ -174,6 +230,7 @@ class MessagesTab(Vertical):
         self.messages = []
         self._message_bubbles.clear()
         self._reply_to_message = None
+        self._participants.clear()
 
         # Update header
         title = self.query_one("#contact-title", Static)
@@ -189,6 +246,10 @@ class MessagesTab(Vertical):
         container = self.query_one("#messages-container", Vertical)
         container.remove_children()
 
+        # Clear nodes list
+        nodes_list = self.query_one("#nodes-list", ListView)
+        nodes_list.clear()
+
         # Clear reply preview
         self._clear_reply()
 
@@ -199,9 +260,13 @@ class MessagesTab(Vertical):
         self.messages = messages
         self._message_bubbles.clear()
         node_names = node_names or {}
+        self._participants = node_names.copy()
 
         container = self.query_one("#messages-container", Vertical)
         container.remove_children()
+
+        # Update participants panel
+        await self._update_participants_panel()
 
         # Messages come in reverse chronological order, so reverse them
         for msg in reversed(messages):
@@ -213,9 +278,25 @@ class MessagesTab(Vertical):
         scroll = self.query_one("#messages-scroll", VerticalScroll)
         scroll.scroll_end(animate=False)
 
+    async def _update_participants_panel(self) -> None:
+        """Update the participants list panel."""
+        nodes_list = self.query_one("#nodes-list", ListView)
+        await nodes_list.clear()
+
+        for node_id, name in self._participants.items():
+            display_name = name or node_id
+            item = NodeListItem(node_id, display_name)
+            await nodes_list.append(item)
+
     async def add_message(self, message: Message, sender_name: str = None) -> None:
         """Add a new message to the view."""
         self.messages.insert(0, message)  # Add to front (newest)
+
+        # Update participants if new sender
+        if message.from_node_id and message.from_node_id not in self._participants:
+            self._participants[message.from_node_id] = sender_name or message.from_node_id
+            await self._update_participants_panel()
+
         await self._add_message_bubble(message, {message.from_node_id: sender_name} if sender_name else {})
 
         self._update_visibility()
@@ -278,7 +359,7 @@ class MessagesTab(Vertical):
     def on_bubble_clicked(self, event: MessageBubble.Clicked) -> None:
         """Handle message bubble click to reply."""
         # Don't reply to our own messages
-        if event.message.from_node_id != self.my_node_id:
+        if event.message.from_node_id \!= self.my_node_id:
             self._set_reply(event.message)
 
     @on(Input.Submitted, "#message-input")
