@@ -496,6 +496,9 @@ class ChatMonitor(App):
             self.current_long_name = info["user"].get("longName", "")
             self.current_short_name = info["user"].get("shortName", "")
 
+            # Mark as connected - this triggers status bar update
+            self.is_connected = True
+
             # Update chat tab with my node ID
             chat_tab = self.query_one("#chat-tab", ChatTab)
             chat_tab.set_my_node_id(self.my_node_id)
