@@ -1538,6 +1538,8 @@ class ChatMonitor(App):
 
 def main():
     """Run the app."""
+    import os
+
     parser = argparse.ArgumentParser(
         description="Meshtastic Terminal - A modern terminal UI for Meshtastic mesh networks"
     )
@@ -1558,21 +1560,21 @@ def main():
     app = ChatMonitor(auto_connect=args.auto_connect, use_ble=args.ble)
 
     if args.ble:
-        original_sigint = signal.getsignal(signal.SIGINT)
-
         def handle_sigint(signum, frame):
             if app.iface and hasattr(app.iface, "_want_receive"):
                 try:
                     app.iface._want_receive = False
                 except Exception:
                     pass
-
-            import os
             os._exit(0)
 
         signal.signal(signal.SIGINT, handle_sigint)
 
     app.run()
+
+    # Force exit to terminate any remaining meshtastic background threads
+    # The library spawns threads that don't terminate cleanly on interface close
+    os._exit(0)
 
 
 if __name__ == "__main__":
